@@ -1,0 +1,52 @@
+---
+base_image: ubuntu:noble
+
+labels:
+  maintainer: "Maciej Rachuna <rachuna.maciej@gmail.com>"
+  image_source: "https://gitlab.com/pl.rachuna-net/containers/trivy"
+
+env:
+  DEBIAN_FRONTEND: noninteractive
+  TF_IN_AUTOMATION: "true"
+  LANG: C.UTF-8
+
+before_build_commands: []
+
+packages:
+  - apt-transport-https
+  - bash
+  - curl
+  - git
+  - gnupg2
+  - jq
+  - libssl3
+  - lsb-release
+  - openssh-client
+  - ca-certificates
+  - gnupg
+  - trivy
+
+custom_repos:
+  - name: trivy
+    key_url: https://aquasecurity.github.io/trivy-repo/deb/public.key
+    key_path: /usr/share/keyrings/trivy.gpg
+    repo_entry: >-
+      deb [signed-by=/usr/share/keyrings/trivy.gpg trusted=yes] https://aquasecurity.github.io/trivy-repo/deb generic main
+
+extra_commands:
+  - chmod 777 /opt/scripts
+  - chmod 777 /opt/scripts/*
+  - trivy --version
+
+copy:
+  - source: scripts/
+    destination: /opt/scripts/
+
+user:
+  name: nonroot
+  shell: /bin/bash
+  home: /home/nonroot
+  chown: /opt/scripts/
+
+entrypoint: "/opt/scripts/entrypoint.bash"
+cmd: "/bin/bash"
